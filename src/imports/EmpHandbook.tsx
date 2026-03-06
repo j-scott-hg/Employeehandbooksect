@@ -9,7 +9,7 @@ function CaTile({ className }: { className?: string }) {
   const isDefault = !pressed;
   return (
     <button
-      className={className || `relative w-[316px] ${isDefault ? "h-[365px]" : "h-[370px]"} cursor-pointer`}
+      className={className || `relative w-[316px] ${isDefault ? "h-[365px]" : "h-[370px]"} cursor-pointer border-0 bg-transparent p-0 outline-none`}
       onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
@@ -34,7 +34,7 @@ function UkTile({ className }: { className?: string }) {
   const isDefault = !pressed;
   return (
     <button
-      className={className || "block cursor-pointer h-[370px] relative w-[330px]"}
+      className={className || "block cursor-pointer h-[370px] relative w-[330px] border-0 bg-transparent p-0 outline-none"}
       onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
@@ -61,7 +61,7 @@ function UsTile({ className }: { className?: string }) {
   const isDefault = !pressed;
   return (
     <button
-      className={className || "block cursor-pointer h-[371px] relative w-[316px]"}
+      className={className || "block cursor-pointer h-[371px] relative w-[316px] border-0 bg-transparent p-0 outline-none"}
       onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
@@ -98,9 +98,9 @@ export default function EmpHandbook({ className }: { className?: string }) {
         </div>
       </div>
       <div className="flex flex-wrap h-auto items-center justify-center gap-6 w-full max-w-[1280px]" data-name="Auto Layout Horizontal">
-        <UsTile className="block cursor-pointer h-[371px] relative shrink-0 w-[316px]" />
-        <UkTile className="block cursor-pointer h-[370px] relative shrink-0 w-[330px]" />
-        <CaTile className="h-[370px] relative shrink-0 w-[316px]" />
+        <UsTile className="block cursor-pointer h-[371px] relative shrink-0 w-[316px] border-0 bg-transparent p-0 outline-none" />
+        <UkTile className="block cursor-pointer h-[370px] relative shrink-0 w-[330px] border-0 bg-transparent p-0 outline-none" />
+        <CaTile className="h-[370px] relative shrink-0 w-[316px] border-0 bg-transparent p-0 outline-none" />
       </div>
     </div>
   );

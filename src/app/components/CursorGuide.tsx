@@ -16,7 +16,18 @@ import {
 function CopyButton({ text, label = "Copy" }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
-    navigator.clipboard.writeText(text);
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0;";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    } catch {
+      // silent fail
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -71,14 +82,18 @@ function CodeSnip({ code }: { code: string }) {
   );
 }
 
-const CURSOR_PROMPT = `I have a React component called EmployeeHandbook that I want to convert into a SharePoint Framework (SPFx) web part. I have already scaffolded the SPFx project using the Yeoman generator with the following settings:
-- Solution name: emp-handbook-webpart
-- Target: SharePoint Online only
-- Component type: WebPart
-- Web part name: EmployeeHandbook
-- Framework: React
+const CURSOR_PROMPT = `I have a React component called EmployeeHandbook that I want to wire into an existing SharePoint Framework (SPFx) web part. The SPFx project has already been scaffolded using the Yeoman generator and the necessary files have already been copied into place. Here is the current state:
 
-The React component and all 4 PNG tile images (us-tile.png, uk-tile.png, ca-tile.png, emp-handbook-header.png) are already in this repository. Please help me do all of the following:
+CURRENT FILE STRUCTURE (already in place):
+- src/webparts/employeeHandbookSection/components/EmployeeHandbook.tsx  ← the React component
+- src/webparts/employeeHandbookSection/assets/CA-TILE.png
+- src/webparts/employeeHandbookSection/assets/UK-TILE.png
+- src/webparts/employeeHandbookSection/assets/US-TILE.png
+- src/webparts/employeeHandbookSection/assets/EMP-HANDBOOK-HEADER.png
+- src/webparts/employeeHandbookSection/EmployeeHandbookSectionWebPart.ts  ← entry point (Yeoman-generated)
+- src/webparts/employeeHandbookSection/EmployeeHandbookSectionWebPart.manifest.json
+
+Please do all of the following:
 
 ---
 
@@ -86,18 +101,19 @@ The React component and all 4 PNG tile images (us-tile.png, uk-tile.png, ca-tile
 Install Tailwind CSS as a PostCSS plugin and configure it for the SPFx project:
 - Run: npm install -D tailwindcss postcss autoprefixer
 - Run: npx tailwindcss init
-- Create tailwind.config.js with content: ["./src/**/*.{ts,tsx}"]
-- Create src/webparts/employeeHandbook/styles/tailwind.css with the three @tailwind directives
+- Create tailwind.config.js with content paths: ["./src/**/*.{ts,tsx}"]
+- Create src/webparts/employeeHandbookSection/styles/tailwind.css with the three @tailwind directives:
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
 - Add a "tw" script to package.json:
-  "tw": "tailwindcss -i ./src/webparts/employeeHandbook/styles/tailwind.css -o ./src/webparts/employeeHandbook/styles/tailwind.output.css --minify"
+  "tw": "tailwindcss -i ./src/webparts/employeeHandbookSection/styles/tailwind.css -o ./src/webparts/employeeHandbookSection/styles/tailwind.output.css --minify"
 - Add a "build" script that runs tw first, then gulp bundle --ship
 
 ---
 
-2. COPY AND ADAPT THE COMPONENT
-Copy EmployeeHandbook.tsx from the repository root into src/webparts/employeeHandbook/components/EmployeeHandbook.tsx.
-
-The component currently imports images using the Figma Make virtual module scheme (figma:asset/). Replace ALL of those imports with standard relative paths pointing to the assets folder:
+2. UPDATE IMAGE IMPORTS IN EmployeeHandbook.tsx
+The component currently has these four image imports using a virtual module scheme that only works in Figma Make — replace ALL four with standard relative paths:
 
 BEFORE:
 import imgCaTile3 from "figma:asset/4f2c38e9d9bce1400a80ca82e9bb566af7537b72.png";
@@ -106,40 +122,30 @@ import imgUsTile22 from "figma:asset/9fe5ee639dad13bf05306691d2416bc4c29a0046.pn
 import imgEmpHandbookHeaderV21 from "figma:asset/6b90ece8af816f458cd789242e3c27eaffb45aed.png";
 
 AFTER:
-import imgCaTile3 from "../assets/ca-tile.png";
-import imgUkTile22 from "../assets/uk-tile.png";
-import imgUsTile22 from "../assets/us-tile.png";
-import imgEmpHandbookHeaderV21 from "../assets/emp-handbook-header.png";
+import imgCaTile3 from "../assets/CA-TILE.png";
+import imgUkTile22 from "../assets/UK-TILE.png";
+import imgUsTile22 from "../assets/US-TILE.png";
+import imgEmpHandbookHeaderV21 from "../assets/EMP-HANDBOOK-HEADER.png";
 
-Also add this import at the top of the component file:
+Also add this import at the top of EmployeeHandbook.tsx (after the image imports):
 import '../styles/tailwind.output.css';
 
-The component uses React useState — make sure "import { useState } from 'react'" is present.
+Make sure "import { useState } from 'react'" is present — the component uses it.
 
 ---
 
-3. COPY IMAGE ASSETS
-Copy the four PNG files from the repository root into:
-src/webparts/employeeHandbook/assets/
-  - us-tile.png
-  - uk-tile.png
-  - ca-tile.png
-  - emp-handbook-header.png
-
----
-
-4. WEB PART ENTRY POINT
-Replace the contents of src/webparts/employeeHandbook/EmployeeHandbookWebPart.ts with the following:
+3. UPDATE THE WEB PART ENTRY POINT
+Replace the contents of src/webparts/employeeHandbookSection/EmployeeHandbookSectionWebPart.ts with the following:
 
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { Version } from '@microsoft/sp-core-library';
 import { BaseClientSideWebPart } from '@microsoft/sp-webpart-base';
-import EmpHandbook from './components/EmployeeHandbook';
+import EmployeeHandbook from './components/EmployeeHandbook';
 
-export default class EmployeeHandbookWebPart extends BaseClientSideWebPart<{}> {
+export default class EmployeeHandbookSectionWebPart extends BaseClientSideWebPart<{}> {
   public render(): void {
-    const element = React.createElement(EmpHandbook);
+    const element = React.createElement(EmployeeHandbook);
     ReactDom.render(element, this.domElement);
   }
   protected onDispose(): void {
@@ -152,15 +158,15 @@ export default class EmployeeHandbookWebPart extends BaseClientSideWebPart<{}> {
 
 ---
 
-5. WEB PART MANIFEST
-In EmployeeHandbookWebPart.manifest.json, update the preconfiguredEntries block:
+4. UPDATE THE WEB PART MANIFEST
+In EmployeeHandbookSectionWebPart.manifest.json, update the preconfiguredEntries block:
 - title: "Employee Handbook"
 - description: "Links to the US, UK, and Canada employee handbooks."
 - officeFabricIconFontName: "BookAnswers"
 
 ---
 
-6. VERIFY THE BUILD
+5. VERIFY THE BUILD
 After making all changes, run the following and confirm no errors:
 npm run tw
 gulp build
